@@ -5,13 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Φύσις | Recursive Flux Architecture</title>
     <style>
-        body { background: #000; color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; font-family: monospace; overflow: hidden; height: 100vh; }
-        .container { width: 95vw; max-width: 400px; margin-bottom: 20px; border: 1px solid #333; border-radius: 15px; background: #080808; overflow: hidden; position: relative; }
-        canvas { width: 100%; display: block; }
-        .zoom-lens { width: 130px; height: 130px; border: 2px solid #555; border-radius: 50%; position: absolute; top: 10px; right: 10px; background: #000; overflow: hidden; box-shadow: 0 0 15px #000; pointer-events: none; z-index: 5; }
-        .label { padding: 10px; font-size: 10px; text-align: center; letter-spacing: 2px; background: #111; font-weight: bold; }
+        /* Fit to screen & remove scrollbars */
+        body { 
+            background: #000; 
+            color: #fff; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            font-family: monospace; 
+            overflow: hidden; /* No scrollbars */
+            height: 100vh;
+            width: 100vw;
+            touch-action: pan-y; /* Enable finger scrolling logic */
+        }
+        
+        #physis-root {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto; /* Allow internal touch scrolling */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        #physis-root::-webkit-scrollbar { display: none; }
+
+        /* Fit to Screen Scaling */
+        .container { 
+            width: 90vmin; /* Scale based on smallest screen dimension */
+            height: auto;
+            margin: 10px 0;
+            border: 1px solid #333; 
+            border-radius: 15px; 
+            background: #080808; 
+            position: relative; 
+            flex-shrink: 0;
+        }
+        
+        canvas { width: 100%; height: auto; display: block; }
+        
+        .zoom-lens { 
+            width: 25%; /* Responsive lens size */
+            aspect-ratio: 1/1;
+            border: 2px solid #555; 
+            border-radius: 50%; 
+            position: absolute; 
+            top: 5%; 
+            right: 5%; 
+            background: #000; 
+            overflow: hidden; 
+            box-shadow: 0 0 15px #000; 
+            pointer-events: none; 
+            z-index: 5; 
+        }
+        
+        .label { padding: 10px; font-size: 1.5vmin; text-align: center; letter-spacing: 2px; background: #111; font-weight: bold; }
         .red { color: #ff3b30; }
         .green { color: #34c759; text-shadow: 0 0 8px #34c759; }
+        
         .controls { position: fixed; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
         button { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 11px; backdrop-filter: blur(5px); transition: 0.2s; font-family: monospace; text-transform: uppercase; }
         button:hover { background: rgba(52, 199, 89, 0.15); border-color: #34c759; color: #34c759; }
@@ -40,16 +98,13 @@
 
 <script>
     window.onload = () => {
-        // --- THE SILENT SOVEREIGN SOURCE PROTOCOL ---
         const isVercel = window.location.hostname.includes('vercel.app');
         const isLocal = window.location.hostname === 'localhost' || 
                         window.location.hostname === '127.0.0.1' || 
                         window.location.protocol === 'file:';
 
-        // Silent exit if unauthorized
         if (!isVercel && !isLocal) return;
 
-        // Reveal root only for verified source
         document.getElementById('physis-root').style.visibility = 'visible';
 
         const dpr = window.devicePixelRatio || 2;
@@ -76,7 +131,6 @@
             const x = 200 + Math.cos(a) * 100;
             const y = 200 + Math.sin(a) * 100;
 
-            // --- RED: INTEGER STEPPING ---
             sCtx.fillStyle = '#000';
             sCtx.fillRect(0,0,400,400);
             sCtx.beginPath();
@@ -90,7 +144,6 @@
             sCtx.lineWidth = 2;
             sCtx.stroke();
 
-            // --- GREEN: Φύσις RECURSION ---
             tCtx.fillStyle = '#000';
             tCtx.fillRect(0,0,400,400);
             tCtx.beginPath();
@@ -104,9 +157,8 @@
             tCtx.lineWidth = 2;
             tCtx.stroke();
 
-            // ZOOM LENS LOGIC
-            szCtx.drawImage(document.getElementById('stdC'), x+20, y-20, 40, 40, 0, 0, 130, 130);
-            tzCtx.drawImage(document.getElementById('tcC'), (x+20)*dpr, (y-20)*dpr, 40*dpr, 40*dpr, 0, 0, 130, 130);
+            szCtx.drawImage(document.getElementById('stdC'), x+20, y-20, 40, 40, 0, 0, szCtx.canvas.width, szCtx.canvas.height);
+            tzCtx.drawImage(document.getElementById('tcC'), (x+20)*dpr, (y-20)*dpr, 40*dpr, 40*dpr, 0, 0, tzCtx.canvas.width/dpr, tzCtx.canvas.height/dpr);
 
             requestAnimationFrame(render);
         }
@@ -122,7 +174,6 @@
             const ctx = offscreen.getContext('2d');
             ctx.drawImage(document.getElementById('stdC'), 0, 0);
             ctx.drawImage(document.getElementById('tcC'), 0, 0, 800, 800, 400, 0, 400, 400);
-            
             const link = document.createElement('a');
             link.download = `Physis_DeepDive_${Date.now()}.png`;
             link.href = offscreen.toDataURL('image/png');
@@ -133,5 +184,4 @@
     };
 </script>
 </body>
-</html>
 </html>
