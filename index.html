@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Structural Logic Deep-Dive</title>
+    <style>
+        body { background: #000; color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; font-family: monospace; }
+        .container { width: 95vw; max-width: 400px; margin-bottom: 20px; border: 1px solid #333; border-radius: 15px; background: #080808; overflow: hidden; position: relative; }
+        canvas { width: 100%; display: block; }
+        .zoom-lens { width: 130px; height: 130px; border: 2px solid #555; border-radius: 50%; position: absolute; top: 10px; right: 10px; background: #000; overflow: hidden; box-shadow: 0 0 15px #000; }
+        .label { padding: 10px; font-size: 10px; text-align: center; letter-spacing: 2px; background: #111; font-weight: bold; }
+        .red { color: #ff3b30; }
+        .green { color: #34c759; text-shadow: 0 0 8px #34c759; }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <canvas id="stdC"></canvas>
+        <div class="zoom-lens"><canvas id="stdZ"></canvas></div>
+        <div class="label red">WITHOUT: INTEGER STEPPING</div>
+    </div>
+
+
+    <div class="container">
+        <canvas id="tcC"></canvas>
+        <div class="zoom-lens"><canvas id="tcZ"></canvas></div>
+        <div class="label green">WITH: TRUE CURVE RECURSION</div>
+    </div>
+
+
+<script>
+    const dpr = window.devicePixelRatio || 2;
+    const setup = (id, size, scale) => {
+        const c = document.getElementById(id);
+        c.width = size * (scale ? dpr : 1);
+        c.height = size * (scale ? dpr : 1);
+        const ctx = c.getContext('2d', { alpha: false });
+        if (scale) ctx.scale(dpr, dpr);
+        return ctx;
+    };
+
+
+    const sCtx = setup('stdC', 400, false);
+    const tCtx = setup('tcC', 400, true);
+    const szCtx = setup('stdZ', 130, false);
+    const tzCtx = setup('tcZ', 130, true);
+
+
+    let a = 0;
+
+
+    function render() {
+        a += 0.007;
+        const x = 200 + Math.cos(a) * 100;
+        const y = 200 + Math.sin(a) * 100;
+
+
+        // --- STANDARD (Red) ---
+        // Forces rounding to reveal the "staircase" struggle
+        sCtx.fillStyle = '#000';
+        sCtx.fillRect(0,0,400,400);
+        sCtx.beginPath();
+        for(let i=0; i<=60; i++) {
+            const r = (i/60)*Math.PI*2;
+            const px = Math.round(x + Math.cos(r)*40);
+            const py = Math.round(y + Math.sin(r)*40);
+            if(i===0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
+        }
+        sCtx.strokeStyle = '#ff3b30';
+        sCtx.lineWidth = 2;
+        sCtx.stroke();
+
+
+        // --- TRUE CURVE (Green) ---
+        // High-density recursion for surgically sharp edges
+        tCtx.fillStyle = '#000';
+        tCtx.fillRect(0,0,400,400);
+        tCtx.beginPath();
+        for(let i=0; i<=2000; i++) {
+            const r = (i/2000)*Math.PI*2;
+            const px = x + Math.cos(r)*40;
+            const py = y + Math.sin(r)*40;
+            if(i===0) tCtx.moveTo(px, py); else tCtx.lineTo(px, py);
+        }
+        tCtx.strokeStyle = '#34c759';
+        tCtx.lineWidth = 2;
+        tCtx.stroke();
+
+
+        // --- FIXED LENS MATH ---
+        // Captures exactly where the curve is moving
+        szCtx.drawImage(document.getElementById('stdC'), x+20, y-20, 40, 40, 0, 0, 130, 130);
+        tzCtx.drawImage(document.getElementById('tcC'), (x+20)*dpr, (y-20)*dpr, 40*dpr, 40*dpr, 0, 0, 130, 130);
+
+
+        requestAnimationFrame(render);
+    }
+    render();
+</script>
+</body>
+</html>
