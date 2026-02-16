@@ -1,8 +1,8 @@
-﻿{
+{
   "version": 2,
+  "name": "physis-recursive-flux",
   "cleanUrls": true,
-  "framework": null,
-  "installCommand": null,
-  "buildCommand": null,
-  "outputDirectory": "."
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
