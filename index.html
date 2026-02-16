@@ -1,104 +1,137 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Structural Logic Deep-Dive</title>
+    <title>Φύσις | Recursive Flux Architecture</title>
     <style>
-        body { background: #000; color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; font-family: monospace; }
+        body { background: #000; color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; font-family: monospace; overflow: hidden; height: 100vh; }
         .container { width: 95vw; max-width: 400px; margin-bottom: 20px; border: 1px solid #333; border-radius: 15px; background: #080808; overflow: hidden; position: relative; }
         canvas { width: 100%; display: block; }
-        .zoom-lens { width: 130px; height: 130px; border: 2px solid #555; border-radius: 50%; position: absolute; top: 10px; right: 10px; background: #000; overflow: hidden; box-shadow: 0 0 15px #000; }
+        .zoom-lens { width: 130px; height: 130px; border: 2px solid #555; border-radius: 50%; position: absolute; top: 10px; right: 10px; background: #000; overflow: hidden; box-shadow: 0 0 15px #000; pointer-events: none; z-index: 5; }
         .label { padding: 10px; font-size: 10px; text-align: center; letter-spacing: 2px; background: #111; font-weight: bold; }
         .red { color: #ff3b30; }
         .green { color: #34c759; text-shadow: 0 0 8px #34c759; }
+        .controls { position: fixed; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
+        button { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 11px; backdrop-filter: blur(5px); transition: 0.2s; font-family: monospace; text-transform: uppercase; }
+        button:hover { background: rgba(52, 199, 89, 0.15); border-color: #34c759; color: #34c759; }
     </style>
 </head>
 <body>
 
+    <div id="physis-root" style="visibility: hidden;">
+        <div class="container">
+            <canvas id="stdC"></canvas>
+            <div class="zoom-lens"><canvas id="stdZ"></canvas></div>
+            <div class="label red">INTEGER STEPPING (LEGACY)</div>
+        </div>
 
-    <div class="container">
-        <canvas id="stdC"></canvas>
-        <div class="zoom-lens"><canvas id="stdZ"></canvas></div>
-        <div class="label red">WITHOUT: INTEGER STEPPING</div>
+        <div class="container">
+            <canvas id="tcC"></canvas>
+            <div class="zoom-lens"><canvas id="tcZ"></canvas></div>
+            <div class="label green">Φύσις (RECURSIVE FLUX)</div>
+        </div>
     </div>
 
-
-    <div class="container">
-        <canvas id="tcC"></canvas>
-        <div class="zoom-lens"><canvas id="tcZ"></canvas></div>
-        <div class="label green">WITH: TRUE CURVE RECURSION</div>
+    <div class="controls">
+        <button id="toggleBtn">STOP MOTION</button>
+        <button id="snapBtn">SNAPSHOT</button>
     </div>
-
 
 <script>
-    const dpr = window.devicePixelRatio || 2;
-    const setup = (id, size, scale) => {
-        const c = document.getElementById(id);
-        c.width = size * (scale ? dpr : 1);
-        c.height = size * (scale ? dpr : 1);
-        const ctx = c.getContext('2d', { alpha: false });
-        if (scale) ctx.scale(dpr, dpr);
-        return ctx;
+    window.onload = () => {
+        // --- THE SILENT SOVEREIGN SOURCE PROTOCOL ---
+        const isVercel = window.location.hostname.includes('vercel.app');
+        const isLocal = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' || 
+                        window.location.protocol === 'file:';
+
+        // Silent exit if unauthorized
+        if (!isVercel && !isLocal) return;
+
+        // Reveal root only for verified source
+        document.getElementById('physis-root').style.visibility = 'visible';
+
+        const dpr = window.devicePixelRatio || 2;
+        const setup = (id, size, scale) => {
+            const c = document.getElementById(id);
+            if (!c) return null;
+            c.width = size * (scale ? dpr : 1);
+            c.height = size * (scale ? dpr : 1);
+            const ctx = c.getContext('2d', { alpha: false });
+            if (scale) ctx.scale(dpr, dpr);
+            return ctx;
+        };
+
+        const sCtx = setup('stdC', 400, false);
+        const tCtx = setup('tcC', 400, true);
+        const szCtx = setup('stdZ', 130, false);
+        const tzCtx = setup('tcZ', 130, true);
+
+        let a = 0;
+        let running = true;
+
+        function render() {
+            if (running) a += 0.007;
+            const x = 200 + Math.cos(a) * 100;
+            const y = 200 + Math.sin(a) * 100;
+
+            // --- RED: INTEGER STEPPING ---
+            sCtx.fillStyle = '#000';
+            sCtx.fillRect(0,0,400,400);
+            sCtx.beginPath();
+            for(let i=0; i<=60; i++) {
+                const r = (i/60)*Math.PI*2;
+                const px = Math.round(x + Math.cos(r)*40);
+                const py = Math.round(y + Math.sin(r)*40);
+                if(i===0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
+            }
+            sCtx.strokeStyle = '#ff3b30';
+            sCtx.lineWidth = 2;
+            sCtx.stroke();
+
+            // --- GREEN: Φύσις RECURSION ---
+            tCtx.fillStyle = '#000';
+            tCtx.fillRect(0,0,400,400);
+            tCtx.beginPath();
+            for(let i=0; i<=2000; i++) {
+                const r = (i/2000)*Math.PI*2;
+                const px = x + Math.cos(r)*40;
+                const py = y + Math.sin(r)*40;
+                if(i===0) tCtx.moveTo(px, py); else tCtx.lineTo(px, py);
+            }
+            tCtx.strokeStyle = '#34c759';
+            tCtx.lineWidth = 2;
+            tCtx.stroke();
+
+            // ZOOM LENS LOGIC
+            szCtx.drawImage(document.getElementById('stdC'), x+20, y-20, 40, 40, 0, 0, 130, 130);
+            tzCtx.drawImage(document.getElementById('tcC'), (x+20)*dpr, (y-20)*dpr, 40*dpr, 40*dpr, 0, 0, 130, 130);
+
+            requestAnimationFrame(render);
+        }
+
+        document.getElementById('toggleBtn').onclick = () => {
+            running = !running;
+            document.getElementById('toggleBtn').innerText = running ? 'STOP MOTION' : 'RESUME';
+        };
+
+        document.getElementById('snapBtn').onclick = () => {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = 800; offscreen.height = 400;
+            const ctx = offscreen.getContext('2d');
+            ctx.drawImage(document.getElementById('stdC'), 0, 0);
+            ctx.drawImage(document.getElementById('tcC'), 0, 0, 800, 800, 400, 0, 400, 400);
+            
+            const link = document.createElement('a');
+            link.download = `Physis_DeepDive_${Date.now()}.png`;
+            link.href = offscreen.toDataURL('image/png');
+            link.click();
+        };
+
+        render();
     };
-
-
-    const sCtx = setup('stdC', 400, false);
-    const tCtx = setup('tcC', 400, true);
-    const szCtx = setup('stdZ', 130, false);
-    const tzCtx = setup('tcZ', 130, true);
-
-
-    let a = 0;
-
-
-    function render() {
-        a += 0.007;
-        const x = 200 + Math.cos(a) * 100;
-        const y = 200 + Math.sin(a) * 100;
-
-
-        // --- STANDARD (Red) ---
-        // Forces rounding to reveal the "staircase" struggle
-        sCtx.fillStyle = '#000';
-        sCtx.fillRect(0,0,400,400);
-        sCtx.beginPath();
-        for(let i=0; i<=60; i++) {
-            const r = (i/60)*Math.PI*2;
-            const px = Math.round(x + Math.cos(r)*40);
-            const py = Math.round(y + Math.sin(r)*40);
-            if(i===0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
-        }
-        sCtx.strokeStyle = '#ff3b30';
-        sCtx.lineWidth = 2;
-        sCtx.stroke();
-
-
-        // --- TRUE CURVE (Green) ---
-        // High-density recursion for surgically sharp edges
-        tCtx.fillStyle = '#000';
-        tCtx.fillRect(0,0,400,400);
-        tCtx.beginPath();
-        for(let i=0; i<=2000; i++) {
-            const r = (i/2000)*Math.PI*2;
-            const px = x + Math.cos(r)*40;
-            const py = y + Math.sin(r)*40;
-            if(i===0) tCtx.moveTo(px, py); else tCtx.lineTo(px, py);
-        }
-        tCtx.strokeStyle = '#34c759';
-        tCtx.lineWidth = 2;
-        tCtx.stroke();
-
-
-        // --- FIXED LENS MATH ---
-        // Captures exactly where the curve is moving
-        szCtx.drawImage(document.getElementById('stdC'), x+20, y-20, 40, 40, 0, 0, 130, 130);
-        tzCtx.drawImage(document.getElementById('tcC'), (x+20)*dpr, (y-20)*dpr, 40*dpr, 40*dpr, 0, 0, 130, 130);
-
-
-        requestAnimationFrame(render);
-    }
-    render();
 </script>
 </body>
+</html>
 </html>
